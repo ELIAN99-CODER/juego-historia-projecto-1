@@ -20,10 +20,7 @@
     min-width: 220px;
     text-align:center;
   }
-  .menu {
-    margin-top:18px;
-    position: relative;
-  }
+  .menu {margin-top:18px;position: relative;}
   #menuBtn {
     padding: 10px 16px;
     font-size: 16px;
@@ -59,9 +56,7 @@
     cursor:pointer;
     text-align:left;
   }
-  .questions-list button:hover {
-    background:#e0e7ff;
-  }
+  .questions-list button:hover {background:#e0e7ff;}
   .modal {
     position: fixed;
     inset: 0;
@@ -84,11 +79,7 @@
     font-size: 18px;
     margin-bottom: 14px;
   }
-  .opts {
-    display:flex;
-    flex-direction: column;
-    gap: 10px;
-  }
+  .opts {display:flex;flex-direction: column;gap: 10px;}
   .optbtn {
     padding: 12px 14px;
     border-radius: 8px;
@@ -100,9 +91,7 @@
     user-select:none;
     transition: background-color 0.15s ease;
   }
-  .optbtn:hover {
-    background: #dbeafe;
-  }
+  .optbtn:hover {background: #dbeafe;}
   #closeModal {
     margin-top: 16px;
     background:#ef4444;
@@ -113,9 +102,7 @@
     cursor:pointer;
     user-select:none;
   }
-  #closeModal:hover {
-    background:#dc2626;
-  }
+  #closeModal:hover {background:#dc2626;}
   .finalbox {
     margin-top: 26px;
     background:#fff;
@@ -143,24 +130,15 @@
     user-select:none;
     transition: background-color 0.2s ease;
   }
-  button.primary:hover {
-    background:#2563eb;
-  }
-  .next-btn {
-    display: none;
-  }
+  button.primary:hover {background:#2563eb;}
   .status {
     margin-top: 14px;
     min-height: 28px;
     font-weight: 600;
     font-size: 17px;
   }
-  .correct {
-    color: #059669;
-  }
-  .incorrect {
-    color: #dc2626;
-  }
+  .correct {color: #059669;}
+  .incorrect {color: #dc2626;}
   @media(max-width:600px){
     .wordpanel{font-size:26px; letter-spacing:8px;}
     input[type="text"]{width: 100%;}
@@ -170,123 +148,100 @@
 </style>
 </head>
 <body>
-<div class="wrap" role="main" aria-label="Juego palabra clave SILEX">
+<div class="wrap">
   <header>
     <h1>Descubre la palabra clave</h1>
-    <div class="wordpanel" id="wordpanel" aria-live="polite" aria-label="Palabra clave con letras reveladas">
-      <!-- Letras ocultas/reveladas aquí -->
-    </div>
+    <div class="wordpanel" id="wordpanel"></div>
   </header>
 
-  <nav class="menu" aria-label="Menú de preguntas">
-    <button id="menuBtn" aria-haspopup="true" aria-expanded="false" aria-controls="questionsList">Menú de preguntas ▼</button>
-    <div class="questions-list" id="questionsList" role="menu" aria-hidden="true">
-      <!-- Botones preguntas se generan aquí -->
-    </div>
+  <nav class="menu">
+    <button id="menuBtn">Menú de preguntas ▼</button>
+    <div class="questions-list" id="questionsList"></div>
   </nav>
 
-  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="qtexto" aria-describedby="opts">
+  <div class="modal" id="modal">
     <div class="card">
       <div id="qtexto"></div>
       <div class="opts" id="opts"></div>
-      <button id="closeModal" aria-label="Cerrar ventana de pregunta">Cerrar</button>
+      <button id="closeModal">Cerrar</button>
     </div>
   </div>
 
-  <section class="finalbox" aria-label="Intento final para ingresar la palabra clave">
+  <section class="finalbox">
     <label for="guessInput">Escribe la palabra clave:</label><br />
-    <input type="text" id="guessInput" aria-describedby="statusLine" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" />
+    <input type="text" id="guessInput" disabled autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" />
     <button class="primary" id="submitGuess">Validar</button>
-    <button class="primary next-btn" id="nextPageBtn" aria-hidden="true">Siguiente</button>
-    <div class="status" id="statusLine" aria-live="polite" role="alert"></div>
+    <div class="status" id="statusLine"></div>
   </section>
 </div>
 
 <script>
 const KEYWORD = "SILEX";
-const KEYWORD_ARR = KEYWORD.split("");
-// Aquí indicamos qué letra se revela en cada pregunta:
-// Índices de letras a revelar (0-based)
-const revealMap = {
-  1: 1, // pregunta 1 revela letra índice 1 ("I")
-  2: 2  // pregunta 2 revela letra índice 2 ("L")
-};
-// Preguntas con opciones y cuál es la correcta (0-based)
+const revealMap = {1: 1, 2: 2};
 const QUESTIONS = [
-  {
-    id: 1,
-    text: "¿De qué material estaban hechas las lanzas del paleolítico?",
-    options: ["Hueso", "Piedra", "Madera"],
-    correct: 1 // Piedra
-  },
-  {
-    id: 2,
-    text: "¿Qué tipo de hombre no se originó en África?",
-    options: ["Neanderthal", "Homo habilis", "Australopithecus", "Homo erectus"],
-    correct: 0 // Neanderthal
-  }
+  {id: 1, text: "¿De qué material estaban hechas las lanzas del paleolítico?", options: ["Hueso", "Piedra", "Madera"], correct: 1},
+  {id: 2, text: "¿Qué tipo de hombre no se originó en África?", options: ["Neanderthal", "Homo habilis", "Australopithecus", "Homo erectus"], correct: 0}
 ];
-
 let revealedIndices = [];
+let answeredQuestions = new Set();
+
 const wordpanel = document.getElementById("wordpanel");
 const questionsList = document.getElementById("questionsList");
 const modal = document.getElementById("modal");
 const qtexto = document.getElementById("qtexto");
 const opts = document.getElementById("opts");
-const closeModalBtn = document.getElementById("closeModal");
-const menuBtn = document.getElementById("menuBtn");
 const guessInput = document.getElementById("guessInput");
 const submitGuessBtn = document.getElementById("submitGuess");
-const nextPageBtn = document.getElementById("nextPageBtn");
 const statusLine = document.getElementById("statusLine");
+const menuBtn = document.getElementById("menuBtn");
+const closeModalBtn = document.getElementById("closeModal");
 
-function renderWordPanel() {
+function renderWordPanel(){
   let html = "";
-  for(let i=0; i < KEYWORD_ARR.length; i++) {
-    html += `<span aria-label="Letra ${i+1}" role="text" style="user-select:none; font-weight:700;">${revealedIndices.includes(i) ? KEYWORD_ARR[i] : "_"}</span>`;
+  for(let i=0;i<KEYWORD.length;i++){
+    html += `<span>${revealedIndices.includes(i) ? KEYWORD[i] : "_"}</span>`;
   }
   wordpanel.innerHTML = html;
 }
 
-function buildMenu() {
+function buildMenu(){
   questionsList.innerHTML = "";
-  QUESTIONS.forEach(q => {
+  QUESTIONS.forEach(q=>{
     const btn = document.createElement("button");
     btn.textContent = `Pregunta ${q.id}`;
-    btn.setAttribute("role","menuitem");
-    btn.onclick = () => openQuestion(q.id);
+    btn.onclick = ()=>openQuestion(q.id);
     questionsList.appendChild(btn);
   });
 }
 
-function openQuestion(id) {
+function openQuestion(id){
   const q = QUESTIONS.find(x=>x.id===id);
   if(!q) return;
   qtexto.textContent = `Pregunta ${q.id}: ${q.text}`;
   opts.innerHTML = "";
-  q.options.forEach((opt, idx) => {
-    const btn = document.createElement("button");
-    btn.className = "optbtn";
-    btn.textContent = opt;
-    btn.onclick = () => chooseOption(q.id, idx);
-    opts.appendChild(btn);
+  q.options.forEach((opt, idx)=>{
+    const b = document.createElement("button");
+    b.className = "optbtn";
+    b.textContent = opt;
+    b.onclick = ()=>chooseOption(q.id, idx);
+    opts.appendChild(b);
   });
   modal.style.display = "flex";
-  modal.setAttribute("aria-hidden", "false");
-  menuBtn.setAttribute("aria-expanded", "false");
   questionsList.style.display = "none";
 }
 
-function closeModal() {
+function closeModal(){
   modal.style.display = "none";
-  modal.setAttribute("aria-hidden", "true");
 }
 
-function chooseOption(qid, idx) {
+function chooseOption(qid, idx){
   const q = QUESTIONS.find(x=>x.id===qid);
-  if(idx === q.correct) {
-    // Correcto
+  if(idx === q.correct){
     revealLetterForQuestion(qid);
+    answeredQuestions.add(qid);
+    if(answeredQuestions.size === QUESTIONS.length){
+      guessInput.disabled = false;
+    }
     markStatus("Correcto ✅", true);
     closeModal();
   } else {
@@ -294,65 +249,44 @@ function chooseOption(qid, idx) {
   }
 }
 
-function revealLetterForQuestion(qid) {
-  const letterIndex = revealMap[qid];
-  if(letterIndex === undefined) return;
-  if(!revealedIndices.includes(letterIndex)) {
-    revealedIndices.push(letterIndex);
+function revealLetterForQuestion(qid){
+  const li = revealMap[qid];
+  if(li !== undefined && !revealedIndices.includes(li)){
+    revealedIndices.push(li);
   }
   renderWordPanel();
 }
 
-function markStatus(text, ok) {
+function markStatus(text, ok){
   statusLine.textContent = text;
   statusLine.className = ok ? "status correct" : "status incorrect";
-  setTimeout(() => {
-    statusLine.textContent = "";
-  }, 2500);
 }
 
-function submitGuess() {
+function submitGuess(){
+  if(guessInput.disabled) return;
   const val = guessInput.value.trim();
-  if(!val) {
+  if(!val){
     markStatus("Escribe algo primero.", false);
     return;
   }
-  if(val.toUpperCase() === KEYWORD) {
-    statusLine.textContent = "CORRECTO ✅";
-    statusLine.className = "status correct";
-    nextPageBtn.style.display = "inline-block";
-    nextPageBtn.setAttribute("aria-hidden", "false");
+  if(val.toUpperCase() === KEYWORD){
+    markStatus("CORRECTO ✅", true);
   } else {
-    statusLine.textContent = "INCORRECTO ❌";
-    statusLine.className = "status incorrect";
-    nextPageBtn.style.display = "none";
-    nextPageBtn.setAttribute("aria-hidden", "true");
+    markStatus("INCORRECTO ❌", false);
   }
 }
 
-function toggleMenu() {
-  if(questionsList.style.display === "block") {
-    questionsList.style.display = "none";
-    menuBtn.setAttribute("aria-expanded", "false");
-  } else {
-    questionsList.style.display = "block";
-    menuBtn.setAttribute("aria-expanded", "true");
-  }
+function toggleMenu(){
+  questionsList.style.display = questionsList.style.display === "block" ? "none" : "block";
 }
 
-function init() {
+function init(){
   renderWordPanel();
   buildMenu();
   closeModalBtn.onclick = closeModal;
   submitGuessBtn.onclick = submitGuess;
   menuBtn.onclick = toggleMenu;
-  nextPageBtn.onclick = () => {
-    alert("Aquí puedes agregar la acción para ir a la siguiente etapa o página.");
-  };
-  // Cerrar modal si se hace click fuera del contenido
-  modal.onclick = (e) => {
-    if(e.target === modal) closeModal();
-  };
+  modal.onclick = (e)=>{if(e.target===modal) closeModal();};
 }
 
 init();
