@@ -1,180 +1,3 @@
-<!doctype html>
-<html lang="es">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Juego palabra clave SILEX</title>
-<style>
-  body{font-family: system-ui, -apple-system, Segoe UI, Roboto; margin:0; padding:18px; background:#f7f8fb; color:#111;}
-  .wrap{max-width:900px; margin:0 auto;}
-  header{display:flex;align-items:center;justify-content:space-between; gap:12px; flex-wrap:wrap;}
-  h1{margin:.2rem 0;font-size:22px;}
-  .wordpanel{
-    font-size:32px;
-    letter-spacing:12px;
-    padding:10px 14px;
-    background:#fff;
-    border-radius:8px;
-    box-shadow:0 1px 6px rgba(0,0,0,.1);
-    user-select:none;
-    min-width: 220px;
-    text-align:center;
-  }
-  .menu {margin-top:18px;position: relative;}
-  #menuBtn {
-    padding: 10px 16px;
-    font-size: 16px;
-    background:#3b82f6;
-    color:#fff;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-    user-select:none;
-  }
-  #menuBtn:hover { background:#2563eb; }
-  .questions-list {
-    position: absolute;
-    top: 44px;
-    left: 0;
-    background:#fff;
-    border-radius:8px;
-    box-shadow: 0 6px 18px rgba(0,0,0,.15);
-    padding:10px;
-    display:none;
-    min-width: 260px;
-    z-index: 10;
-  }
-  .questions-list button {
-    display:block;
-    width:100%;
-    margin-bottom: 8px;
-    padding:8px 10px;
-    font-size:15px;
-    border:1px solid #cbd5e1;
-    border-radius:6px;
-    background:#f8fafc;
-    cursor:pointer;
-    text-align:left;
-  }
-  .questions-list button:hover {background:#e0e7ff;}
-  .modal {
-    position: fixed;
-    inset: 0;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0,0,0,.38);
-    z-index: 20;
-  }
-  .card {
-    background:#fff;
-    padding:22px 26px;
-    border-radius:12px;
-    max-width: 520px;
-    width: 90%;
-    box-shadow: 0 12px 36px rgba(0,0,0,.2);
-  }
-  #qtexto {
-    font-weight:600;
-    font-size: 18px;
-    margin-bottom: 14px;
-  }
-  .opts {display:flex;flex-direction: column;gap: 10px;}
-  .optbtn {
-    padding: 12px 14px;
-    border-radius: 8px;
-    border: 1px solid #cbd5e1;
-    background:#f8fafc;
-    cursor:pointer;
-    font-size: 16px;
-    text-align: left;
-    user-select:none;
-    transition: background-color 0.15s ease;
-  }
-  .optbtn:hover {background: #dbeafe;}
-  #closeModal {
-    margin-top: 16px;
-    background:#ef4444;
-    color:#fff;
-    border:none;
-    padding: 8px 14px;
-    border-radius: 8px;
-    cursor:pointer;
-    user-select:none;
-  }
-  #closeModal:hover {background:#dc2626;}
-  .finalbox {
-    margin-top: 26px;
-    background:#fff;
-    padding:16px 20px;
-    border-radius:12px;
-    box-shadow: 0 3px 14px rgba(0,0,0,.1);
-  }
-  input[type="text"] {
-    padding: 12px 14px;
-    border-radius: 8px;
-    border: 1px solid #cbd5e1;
-    width: 70%;
-    font-size: 16px;
-    outline-offset: 2px;
-  }
-  button.primary {
-    padding: 12px 18px;
-    border-radius: 8px;
-    background:#3b82f6;
-    color:#fff;
-    border:none;
-    cursor:pointer;
-    margin-left: 10px;
-    font-size: 16px;
-    user-select:none;
-    transition: background-color 0.2s ease;
-  }
-  button.primary:hover {background:#2563eb;}
-  .status {
-    margin-top: 14px;
-    min-height: 28px;
-    font-weight: 600;
-    font-size: 17px;
-  }
-  .correct {color: #059669;}
-  .incorrect {color: #dc2626;}
-  @media(max-width:600px){
-    .wordpanel{font-size:26px; letter-spacing:8px;}
-    input[type="text"]{width: 100%;}
-    button.primary {width: 100%; margin-left:0; margin-top:8px;}
-    .finalbox {padding: 14px;}
-  }
-</style>
-</head>
-<body>
-<div class="wrap">
-  <header>
-    <h1>Descubre la palabra clave</h1>
-    <div class="wordpanel" id="wordpanel"></div>
-  </header>
-
-  <nav class="menu">
-    <button id="menuBtn">Menú de preguntas ▼</button>
-    <div class="questions-list" id="questionsList"></div>
-  </nav>
-
-  <div class="modal" id="modal">
-    <div class="card">
-      <div id="qtexto"></div>
-      <div class="opts" id="opts"></div>
-      <button id="closeModal">Cerrar</button>
-    </div>
-  </div>
-
-  <section class="finalbox">
-    <label for="guessInput">Escribe la palabra clave:</label><br />
-    <input type="text" id="guessInput" disabled autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" />
-    <button class="primary" id="submitGuess">Validar</button>
-    <div class="status" id="statusLine"></div>
-  </section>
-</div>
-
 <script>
 const KEYWORD = "SILEX";
 const revealMap = {1: 1, 2: 2};
@@ -207,11 +30,20 @@ function renderWordPanel(){
 function buildMenu(){
   questionsList.innerHTML = "";
   QUESTIONS.forEach(q=>{
-    const btn = document.createElement("button");
-    btn.textContent = `Pregunta ${q.id}`;
-    btn.onclick = ()=>openQuestion(q.id);
-    questionsList.appendChild(btn);
+    if(!answeredQuestions.has(q.id)){ // ❗ Ocultar preguntas ya respondidas
+      const btn = document.createElement("button");
+      btn.textContent = `Pregunta ${q.id}`;
+      btn.onclick = ()=>openQuestion(q.id);
+      questionsList.appendChild(btn);
+    }
   });
+
+  // Si todas respondidas, desactivar menú
+  if(answeredQuestions.size === QUESTIONS.length){
+    menuBtn.disabled = true;
+    questionsList.style.display = "none";
+    guessInput.disabled = false;
+  }
 }
 
 function openQuestion(id){
@@ -239,11 +71,9 @@ function chooseOption(qid, idx){
   if(idx === q.correct){
     revealLetterForQuestion(qid);
     answeredQuestions.add(qid);
-    if(answeredQuestions.size === QUESTIONS.length){
-      guessInput.disabled = false;
-    }
     markStatus("Correcto ✅", true);
     closeModal();
+    buildMenu(); // ❗ Actualizar menú para quitar la pregunta respondida
   } else {
     markStatus("Incorrecto ❌", false);
   }
@@ -263,7 +93,10 @@ function markStatus(text, ok){
 }
 
 function submitGuess(){
-  if(guessInput.disabled) return;
+  if(answeredQuestions.size < QUESTIONS.length){
+    markStatus("Debes responder todas las preguntas primero.", false);
+    return;
+  }
   const val = guessInput.value.trim();
   if(!val){
     markStatus("Escribe algo primero.", false);
@@ -291,5 +124,3 @@ function init(){
 
 init();
 </script>
-</body>
-</html>
